@@ -7,12 +7,23 @@ Automation scripts and associated code to provision and decommission CLM offer f
 Install
 =======
 
+You first need to create a new automation category in BRPM, to do so, log in BRPM and:
+  1. go to Environment -> Metadata -> Manage Lists
+  2. Click AutomationCategory in the list displayed.
+  3. In the Add List Item box, enter BMC Cloud LifeCycle Management
+  4. Click Add Item. The new item gets added to the Active List items list.
+  5. Click Save.
+  
+Then you need to add 2 folders in the RLM server:
+  <BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/automation/BMC Cloud LifeCycle Management
+  BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/resource_automation/BMC Cloud LifeCycle Management
+  
 Files in automation directories need to be copied on BRPM server to: 
-  <BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/automation/General
+  <BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/automation/BMC Cloud LifeCycle Management
 Files in resource_automation need to be copied on BRPM server to:
   
 clm_utilities.rb to be copied on BRPM server to: 
-  <BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/resource_automation/General
+  <BRPM install dir>/WEB-INF/lib/script_support/LIBRARY/resource_automation/BMC Cloud LifeCycle Management
 
 Setup
 =====
