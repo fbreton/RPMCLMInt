@@ -64,7 +64,7 @@ module ClmUtilities
 			return response
 		end	
 
-		def service_provision(offerID, instname, username, password, hostnameprefix, tenant, quantity=1)
+		def service_provision(offerID, instname, username, password, hostnameprefix, tenant, quantity=1, userparam=nil)
 			servNames = Array.new
 			servOffInst = nil
 			ops_req = Array.new
@@ -84,6 +84,13 @@ module ClmUtilities
 			ops_req << {:name=>"hostnamePrefix",:type=>OP_TYPE_STRING,:multiplicity=>"1",:value=>hostnameprefix}
 			ops_req << {:name=>"quantity",:type=>OP_TYPE_INT,:multiplicity=>"1",:value=>quantity}
 			ops_req << {:name=>"tenant",:type=>OP_TYPE_STRING,:multiplicity=>"1",:value=>tenant}
+			unless userparam.nil?
+				aux = []
+				userparam.each_pair do |name, value|
+					aux << {:cloudClass=>"com.bmc.cloud.model.beans.NameValuePair",:name=>name,:value=>value}
+				end
+				ops_req << {:name=>"userParameters",:type=>"com.bmc.cloud.model.beans.NameValuePair",:multiplicity=>"1..*",:value=>aux}
+			end
 			hash_req = {:timeout=>-1, :operationParams=>ops_req}
 			
 			response = request("POST",SVC_BULK_CREATE_ACTION,hash_req) 	#launch service provisioning

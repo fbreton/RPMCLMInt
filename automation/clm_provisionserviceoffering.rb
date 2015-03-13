@@ -16,6 +16,10 @@
 #   name: password for the host
 #   position: E2:F2
 #   type: in-text
+# UserParameters:
+#	name: user parameters for CLM offer
+#	position: A3:F3
+#	type: in-text
 ###
 
 require 'lib/script_support/clm_utilities'
@@ -23,7 +27,7 @@ params["direct_execute"] = true
 
 CLM_HOST = SS_integration_dns
 CLM_USER = SS_integration_username
-CLM_PASSWORD = SS_integration_password
+CLM_PASSWORD = decrypt_string_with_prefix(SS_integration_password_enc)
 
 #Init variables
 env = params["SS_environment"]
@@ -32,16 +36,25 @@ instname = params["ServiceName"]
 username = "root"
 password = params["Password"]
 hostnameprefix=params["HostPrefix"]
+userparams=params["UserParameters"]
 
 raise "Error: OfferName needs to be populated" if offerID.empty?
 raise "Error: ServiceName needs to be populated" if instname.empty?
+
+userparams_hash=nil
+unless userparams.empty?
+	userparams_hash={}
+	userparams.split('|').each do |aux|
+		userparams_hash[aux.split('=')[0]]=aux.split('=')[1]
+	end
+end
 
 #Init and connecting to CLM
 clmobj = ClmUtilities::ClmCall.new(CLM_HOST, CLM_USER, CLM_PASSWORD)
 clmobj.login()
 
 # Provision requested offer (tenant should be parametrized with a resource automation requesting CLM)
-result = clmobj.service_provision(offerID, instname, username, password, hostnameprefix,"Development & Test")
+result = clmobj.service_provision(offerID, instname, username, password, hostnameprefix,"Development & Test",1,userparams_hash)
 serviceoffID = result["servoffinst"]
 serverNames = result["servnames"]
 
