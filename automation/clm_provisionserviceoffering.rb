@@ -58,9 +58,6 @@ result = clmobj.service_provision(offerID, instname, username, password, hostnam
 serviceoffID = result["servoffinst"]
 serverNames = result["servnames"]
 
-#logout from CLM
-clmobj.logout()
-
 # print result and update rpm properties, servers with result
 set_property_flag("ServiceInstID", "#{serviceoffID}")
 set_server = "name, environment\n"

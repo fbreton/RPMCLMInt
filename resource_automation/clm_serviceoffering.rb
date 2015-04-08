@@ -13,7 +13,6 @@ def execute(script_params, parent_id, offset, max_records)
 	result.each do |elt|
 		response << {elt["name"]=>"#{elt["reconciliationID"]}|#{elt["name"]}"}
 	end
-	clmobj.logout()
 	return response
 end
 

@@ -100,46 +100,48 @@ module ClmUtilities
 			taskUri = taskUri[(ind+3)..(taskUri.length)]
 			result = wait_task_completed(taskUri)						#wait for service to be provisioned and started or failed
 			
-			# following 2 lines are because of bad formating of the output not respecting JSON format
-			ind =  result.index(":")
-			result = JSON.parse result[(ind+1)..(result.length)]
-			
-			# Store service offering instance uri and name of provisionned servers
-			servOffInst = result["functionalComponentsObject"][0]["serviceOfferingInstance"]
-			result = request("GET",result["functionalComponentsObject"][0]["resourceSet"])
-			raise "Compute not found in #{result}" if result["compute"].nil?
-			result["compute"].each do |compuri|
-				result = request("GET",compuri)
-				servNames << result["name"]
-			end
-			return {"servoffinst"=>servOffInst.gsub("/serviceofferinginstance/",""), "servnames"=>servNames}
+            # Store service offering instance uri and name of provisionned servers
+            servOffInst = result["functionalComponentsObject"][0]["serviceOfferingInstance"]
+            foncComp = result["functionalComponentsObject"]
+            foncComp.each do |elt|
+                                result = request("GET",elt["resourceSet"])
+                                raise "Compute not found in #{result}" if result["compute"].nil?
+                                result = request("GET",result["compute"][0])
+                                servNames << result["name"]
+            end
+            return {"servoffinst"=>servOffInst.gsub("/serviceofferinginstance/",""), "servnames"=>servNames.uniq}
 		end
 		
 		def service_decommission(soi)
 			raise "Error: soi needs to contain a value" if soi.empty?
 			hash_req = {:timeout=>-1, :preCallout=>"", :postCallout=>"", :operationParams=>[]}
 			response = request("POST","/serviceofferinginstance/#{soi}/decommission",hash_req)
-			raise "Error: Service instance does not exist" if response.has_key? "errors"
+			raise "Error: Service instance does not exist" unless response["errors"].empty?
 		end
 
 
-		def wait_task_completed(uri)
-			getresult = 1
-			until getresult == 0
-				result=request("GET",uri)
-				if result.has_key? "results"
+        def wait_task_completed(uri)
+                        getresult = 1
+                        until getresult == 0
+                                result=request("GET",uri)
+                                if result.has_key? "results"
                                         getresult = 0
-                                        result = result["results"][0]
+                                        result["results"].each do |elt|
+                                                ind = elt.index(":")
+                                                elt = JSON.parse elt[(ind+1)..(elt.length)]
+                                                return elt if elt["cloudClass"] == "com.bmc.cloud.model.beans.ServiceOfferingInstance"
+                                        end
                                 else
-                                       	raise "#{result["className"]} #{result["operationName"]} operation failed" if result["taskState"] == "FAILED"
-                                        sleep(60)
+                                        raise "#{result["className"]} #{result["operationName"]} operation failed" if result["taskState"] == "FAILED"
+                                        sleep(90)
                                 end
-				if result["taskState"] == "FAILED" 
-					raise "#{result["className"]} #{result["operationName"]} operation failed"
-				end
-			end	
-			return result
-		end
+                                if result["taskState"] == "FAILED"
+                                        raise "#{result["className"]} #{result["operationName"]} operation failed"
+                                end
+                        end
+                        return result
+        end
+
 	
 		def request(method, uri, reqbody={})
 			if method == "GET"

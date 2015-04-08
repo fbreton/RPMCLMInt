@@ -28,6 +28,5 @@ soi = params["ServiceInstID"]
 clmobj = ClmUtilities::ClmCall.new(CLM_HOST, CLM_USER, CLM_PASSWORD)
 clmobj.login()
 result = clmobj.service_decommission(soi)
-clmobj.logout()
 write_to("Decommission done")
 
